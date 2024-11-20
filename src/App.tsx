@@ -3,8 +3,9 @@ import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import LogIn from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import { useAuth } from "./providers/AuthProvider";
+import { AuthProvider, useAuth } from "./providers/AuthProvider";
 
+//TODO: refactor this to a separate file
 const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { isLoggedIn } = useAuth();
 
@@ -17,14 +18,16 @@ const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/login" element={<LogIn />} />
-        <Route path="/signup" element={<SignUp />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/login" element={<LogIn />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 
