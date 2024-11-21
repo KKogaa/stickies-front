@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar, { NavbarProps } from "../components/Navbar";
 import { useAuth } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 function LogIn() {
 
@@ -10,6 +11,8 @@ function LogIn() {
     fromLogin: true,
     fromRegister: false
   };
+
+  const navigate = useNavigate();
 
   //TODO: refactor this I think that it is bad practice
   const [email, setEmail] = useState("");
@@ -22,6 +25,7 @@ function LogIn() {
     // get the data from the input field
     try {
       await login(email, password);
+      navigate("/home");
     } catch (error) {
       console.error(`failed to login: ${error}`);
     }

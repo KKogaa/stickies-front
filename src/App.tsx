@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./providers/AuthProvider";
 //TODO: refactor this to a separate file
 const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { isLoggedIn } = useAuth();
+  console.log(`isLoggedIn ${isLoggedIn}`);
 
   return isLoggedIn ? (
     <>{children}</>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar, { NavbarProps } from "../components/Navbar";
 import { useAuth } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 function SignUp() {
 
@@ -8,6 +9,8 @@ function SignUp() {
     fromLogin: false,
     fromRegister: true
   };
+
+  const navigate = useNavigate();
 
   //TODO: refactor to useRef
   const [email, setEmail] = useState("");
@@ -22,6 +25,7 @@ function SignUp() {
         return;
       }
       await signup(email, password);
+      navigate("/home");
     } catch (error) {
       console.error(`failed to signup: ${error}`);
     }

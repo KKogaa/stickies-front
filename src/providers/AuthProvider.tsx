@@ -34,9 +34,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('test');
+    const token = localStorage.getItem('jwtToken');
+    console.log(`ENTRO GAAAAAAAAAAAAAaa`);
     if (token) {
+      console.log(`setting is logged in`)
       setIsLoggedIn(true);
+      console.log(isLoggedIn);
     }
   }, []);
 
@@ -60,33 +63,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const login = async (email: string, password: string): Promise<void> => {
-    // Implement login logic here, e.g., fetch token from server
-    console.log(`from login function Email: ${email} Password: ${password}`);
-    localStorage.setItem('jwtToken', 'your_jwt_token');
     const db = await getDb();
-    const token = await db.signin({
+    await db.signin({
       namespace: 'dev',
       database: 'stickies',
-      username: email,
-      password: password
+      access: 'user',
+      variables: {
+        email: email,
+        password: password
+      }
+    }).then((token) => {
+      localStorage.setItem('jwtToken', token);
+      setIsLoggedIn(true);
+    }).catch((err) => {
+      console.error("Failed to login:", err instanceof Error ? err.message : String(err));
     });
-    console.log(token);
-    setIsLoggedIn(true);
   };
 
   const signup = async (email: string, password: string): Promise<void> => {
-    // Implement login logic here, e.g., fetch token from server
-    console.log(`from login function Email: ${email} Password: ${password}`);
-    localStorage.setItem('jwtToken', 'your_jwt_token');
     const db = await getDb();
-    const token = await db.signin({
+
+    await db.signup({
       namespace: 'dev',
       database: 'stickies',
-      username: email,
-      password: password
+      access: 'user',
+
+      variables: {
+        name: email,
+        email: email,
+        password: password
+      }
+    }).then((token) => {
+      localStorage.setItem('jwtToken', token);
+      setIsLoggedIn(true);
+    }).catch((err) => {
+      console.error("Failed to signup:", err instanceof Error ? err.message : String(err));
     });
-    console.log(token);
-    setIsLoggedIn(true);
   };
 
   const logout = () => {
