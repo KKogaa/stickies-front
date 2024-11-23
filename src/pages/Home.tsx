@@ -8,7 +8,8 @@ function Home() {
 
   const navbarProps: NavbarProps = {
     fromLogin: true,
-    fromRegister: true
+    fromRegister: true,
+    fromHome: false
   };
 
   const handleModalOpen = () => {
@@ -25,7 +26,7 @@ function Home() {
       <Navbar {...navbarProps} />
       <div className="flex start m-4">
         <select className="select select-bordered w-full max-w-xs">
-          <option disabled selected>Equipo</option>
+          <option disabled selected>Todos</option>
           <option>Han Solo</option>
           <option>Greedo</option>
         </select>
@@ -41,7 +42,6 @@ function Home() {
             text-white text-sm" />
         </div>
         <button className="btn btn-primary btn-rounded ml-2" onClick={handleModalOpen}>Agregar</button>
-
         {showCreateModal ?
           <dialog open id="my_modal_1" className="modal">
             <div className="modal-box w-full">

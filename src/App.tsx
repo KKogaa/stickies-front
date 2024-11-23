@@ -5,10 +5,8 @@ import LogIn from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import { AuthProvider, useAuth } from "./providers/AuthProvider";
 
-//TODO: refactor this to a separate file
 const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { isLoggedIn } = useAuth();
-  console.log(`isLoggedIn ${isLoggedIn}`);
 
   return isLoggedIn ? (
     <>{children}</>
@@ -17,15 +15,25 @@ const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
+const RerouteHome: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+
+  return isLoggedIn ? (
+    <Navigate to="/home" replace />
+  ) : (
+    <>{children}</>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<RerouteHome><Landing /></RerouteHome>} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/login" element={<LogIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<RerouteHome><LogIn /></RerouteHome>} />
+          <Route path="/signup" element={<RerouteHome><SignUp /></RerouteHome>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

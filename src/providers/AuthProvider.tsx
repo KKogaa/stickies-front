@@ -16,6 +16,7 @@ const DEFAULT_CONFIG: DbConfig = {
 
 interface AuthContextProps {
   isLoggedIn: boolean;
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   test: (email: string, password: string) => void;
@@ -24,6 +25,7 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps>({
   isLoggedIn: false,
+  setIsLoggedIn: () => { },
   login: async () => { },
   logout: () => { },
   test: () => { },
@@ -35,11 +37,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
-    console.log(`ENTRO GAAAAAAAAAAAAAaa`);
     if (token) {
-      console.log(`setting is logged in`)
       setIsLoggedIn(true);
-      console.log(isLoggedIn);
     }
   }, []);
 
@@ -107,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, test, signup }}>
+    <AuthContext.Provider value={{ setIsLoggedIn, isLoggedIn, login, logout, test, signup }}>
       {children}
     </AuthContext.Provider>
   );
