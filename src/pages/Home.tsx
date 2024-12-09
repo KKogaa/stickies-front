@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar, { NavbarProps } from "../components/Navbar"
 import Card from "../components/Card";
+import { addSticky, fetchStickies, Sticky } from "../lib/queries/stickies_repo";
 
 function Home() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [stickies, setStickies] = useState<Sticky[]>([]);
+
 
   const navbarProps: NavbarProps = {
     fromLogin: true,
@@ -19,6 +22,21 @@ function Home() {
   const handleModalClose = () => {
     setShowCreateModal(false);
   };
+
+  const handleSave = async () => {
+    console.log("Save");
+    await addSticky("1", "1");
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchStickies("1", "1");
+      setStickies(data);
+    };
+
+    fetchData();
+    console.log(stickies.length);
+  }, []);
 
 
   return (
@@ -50,6 +68,7 @@ function Home() {
               <div className="modal-action">
                 <form method="dialog">
                   <button className="btn" onClick={handleModalClose}>Close</button>
+                  <button className="btn" onClick={handleSave}>Save</button>
                 </form>
               </div>
             </div>
@@ -57,10 +76,12 @@ function Home() {
           : <></>}
       </div>
       <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
-        {Array.from({ length: 10 }).map((_, index) => (
-          <Card key={index} index={index} title="Card title!"
-            body="If a dog chews shoes whose shoes does he choose?" />
-        ))}
+        {
+          stickies.length === 0 ? <></> :
+            stickies.map((sticky, index) => (
+              <Card key={index} index={index} title={sticky.title} body={sticky.content} />
+            ))
+        }
       </div>
     </div>
   );
