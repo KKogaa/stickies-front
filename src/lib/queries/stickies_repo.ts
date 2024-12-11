@@ -1,68 +1,76 @@
+import Surreal from "surrealdb";
 import { getDb } from "../surreal";
+import { Team } from "./teams_repo";
 
-export interface Sticky {
+export type Owner = {
   id: string;
+  tb: string;
+};
+
+export type Sticky = {
+  id?: string;
   title: string;
   content: string;
-  userId: string;
-  teamId: string;
-}
+  owner?: Owner;
+};
 
-export const fetchStickies = async (
-  userId: string,
-  teamId: string,
-): Promise<Sticky[]> => {
+export const fetchStickies = async (): Promise<Sticky[]> => {
   const db = await getDb();
   if (!db) {
     throw new Error("Failed to connect to SurrealDB");
   }
 
-  let stickies: Sticky[] = [];
   try {
-    //stickies = await db.query("select * from sticky");
-    //console.log("AAAAAAAAAAAAAAAaa");
-    //console.log(stickies);
-    //console.log(JSON.stringify(stickies[0]));
-    //console.log(stickies[0][0].title);
-    //console.log("AAAAAAAAAAAAAAAaa");
-    stickies = await db.select<Sticky>("sticky");
-    console.log(stickies);
+    const records = await db.select("sticky");
+    return records.map((record) => {
+      const sticky: Sticky = {
+        id: record.id.toString(),
+        title: record.title as string,
+        content: record.content as string,
+        owner: record.owner as Owner
+      };
+      console.log(sticky);
+      return sticky;
+    });
   } catch (err) {
     console.error(err);
   } finally {
     await db.close();
   }
-  return stickies;
+  return [];
 };
 
 export const addSticky = async (
   title: string,
   content: string,
-): Promise<Sticky> => {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("Failed to connect to SurrealDB");
-  }
+  team?: Team,
+): Promise<void> => {
+  const db = await getDb()
+    .catch((err) => {
+      console.error(err);
+    })
+    .then((db: Surreal | void) => {
+      if (!db) {
+        throw new Error("Failed to connect to SurrealDB");
+      }
+      return db;
+    });
 
   try {
-    const record = await db.create("sticky", {
-      title: title,
-      content: content,
-    });
-    console.log("BBBBBBBBBBBBBBBB");
+    const record = await db.query(
+      "create sticky set title = $title, content = $content",
+      {
+        title,
+        content,
+      },
+    );
+ 
+    //add relation from sticky to team
+    //await db.relate("team", team.id, );
+
     console.log(record);
-    console.log("BBBBBBBBBBBBBBBB");
   } catch (err) {
-    console.error(err);
   } finally {
     await db.close();
   }
-
-  return {
-    id: "",
-    title: "",
-    content: "",
-    userId: "",
-    teamId: "",
-  };
 };

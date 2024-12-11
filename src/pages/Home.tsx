@@ -2,11 +2,20 @@ import { useEffect, useState } from "react";
 import Navbar, { NavbarProps } from "../components/Navbar"
 import Card from "../components/Card";
 import { addSticky, fetchStickies, Sticky } from "../lib/queries/stickies_repo";
+import { fetchTeams, Team } from "../lib/queries/teams_repo";
 
 function Home() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateTeamModal, setCreateTeamModal] = useState(false);
   const [stickies, setStickies] = useState<Sticky[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [teamName, setTeamName] = useState("");
+  const [formData, setFormData] = useState({
+    title: "",
+    content: ""
+  });
+  const [selectedTeam, setSelectedTeam] = useState("");
 
 
   const navbarProps: NavbarProps = {
@@ -15,27 +24,34 @@ function Home() {
     fromHome: false
   };
 
-  const handleModalOpen = () => {
-    setShowCreateModal(true);
-  };
-
-  const handleModalClose = () => {
-    setShowCreateModal(false);
-  };
-
-  const handleSave = async () => {
-    console.log("Save");
-    await addSticky("1", "1");
+  const handleSelectTeam = (e: any) => {
+    setSelectedTeam(e.target.value);
   }
 
+  //TODO: this is noob way of handling as form wont change, but not strong in react 
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  }
+
+  // on the selector change requery the stickies
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchStickies("1", "1");
+    const fetchTeamsData = async () => {
+      const data = await fetchTeams();
+      setTeams(data);
+    }
+
+    const fetchStickiesData = async () => {
+      const data = await fetchStickies();
       setStickies(data);
     };
 
-    fetchData();
-    console.log(stickies.length);
+
+    fetchTeamsData();
+    fetchStickiesData();
   }, []);
 
 
@@ -45,8 +61,11 @@ function Home() {
       <div className="flex start m-4">
         <select className="select select-bordered w-full max-w-xs">
           <option disabled selected>Todos</option>
-          <option>Han Solo</option>
-          <option>Greedo</option>
+          {
+            teams.map((team, index) => (
+              <option key={index} onSelect={handleSelectTeam}>{team.name}</option>
+            ))
+          }
         </select>
         <div className="flex px-4 py-3 rounded-md border-2 border-blue-500 
           overflow-hidden ml-2 w-full">
@@ -59,16 +78,87 @@ function Home() {
           <input placeholder="Buscar algo..." className="w-full outline-none bg-transparent 
             text-white text-sm" />
         </div>
-        <button className="btn btn-primary btn-rounded ml-2" onClick={handleModalOpen}>Agregar</button>
+        <button className="btn btn-primary btn-rounded ml-2" onClick={() => setCreateTeamModal(true)}>
+          Agregar equipo
+        </button>
+        {showCreateTeamModal ?
+          <dialog open id="my_modal_1" className="modal">
+            <div className="modal-box w-full h-fit">
+              <div className="flex flex-row-reverse">
+                <button
+                  className="flex-end btn btn-secondary btn-circle m-2"
+                  onClick={() => setCreateTeamModal(false)}>
+                  X
+                </button>
+              </div>
+              <div>
+                <form>
+                  <input
+                    name="name"
+                    type="text"
+                    placeholder="Nombre"
+                    className="input input-bordered w-full m-2"
+                    onChange={(e: any) => {
+                      setTeamName(e.target.value);
+                    }}
+                  />
+                  <button
+                    className="btn btn-primary btn-rounded m-2"
+                    type="submit"
+                    onClick={(e: any) => {
+                      e.preventDefault();
+                      setCreateTeamModal(false);
+                    }}
+                  >
+                    Guardar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+          : <></>}
+        <button className="btn btn-primary btn-rounded ml-2" onClick={() => {
+          setShowCreateModal(true);
+        }}>Agregar nota</button>
         {showCreateModal ?
           <dialog open id="my_modal_1" className="modal">
-            <div className="modal-box w-full">
-              <h3 className="font-bold text-lg">Hello!</h3>
-              <p className="py-4">Press ESC key or click the button below to close</p>
-              <div className="modal-action">
-                <form method="dialog">
-                  <button className="btn" onClick={handleModalClose}>Close</button>
-                  <button className="btn" onClick={handleSave}>Save</button>
+            <div className="modal-box w-full h-fit">
+              <div className="flex flex-row-reverse">
+                <button
+                  className="flex-end btn btn-secondary btn-circle m-2"
+                  onClick={() => setShowCreateModal(false)}>
+                  X
+                </button>
+              </div>
+              <div>
+                <form>
+                  <input
+                    name="title"
+                    type="text"
+                    placeholder="Título"
+                    className="input input-bordered w-full m-2"
+                    onChange={handleInputChange}
+                  />
+                  <input
+                    name="content"
+                    type="text"
+                    placeholder="Contenido"
+                    className="input input-bordered w-full m-2"
+                    onChange={handleInputChange}
+                  />
+                  <button
+                    className="btn btn-primary btn-rounded m-2"
+                    type="submit"
+                    onClick={async (e: any) => {
+                      e.preventDefault();
+                      await addSticky(formData.title, formData.content);
+                      const data = await fetchStickies();
+                      setStickies(data);
+                      setShowCreateModal(false);
+                    }}
+                  >
+                    Guardar
+                  </button>
                 </form>
               </div>
             </div>

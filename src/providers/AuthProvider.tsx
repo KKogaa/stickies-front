@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       access: 'user',
       variables: {
         email: email,
-        password: password
+        pass: password
       }
     }).then((token) => {
       localStorage.setItem('jwtToken', token);
@@ -88,9 +88,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       access: 'user',
 
       variables: {
-        name: email,
+        //name: email,
         email: email,
-        password: password
+        pass: password
       }
     }).then((token) => {
       localStorage.setItem('jwtToken', token);
