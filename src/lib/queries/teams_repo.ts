@@ -14,13 +14,16 @@ export const createTeam = async (name: string): Promise<void> => {
   }
 
   try {
-    await db.insert("team", { name });
+    const record = await db.query("create team set name = $name", {
+      name,
+    });
+    console.log(record);
   } catch (err) {
     console.error(err);
   } finally {
     await db.close();
   }
-}
+};
 
 export const fetchTeams = async (): Promise<Team[]> => {
   const db = await getDb()
@@ -42,7 +45,7 @@ export const fetchTeams = async (): Promise<Team[]> => {
         id: record.id.toString(),
         name: record.name as string,
         //members: record.members as string[],
-      }; 
+      };
       return team;
     });
     console.log(teams);

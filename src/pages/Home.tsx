@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar, { NavbarProps } from "../components/Navbar"
 import Card from "../components/Card";
 import { addSticky, fetchStickies, Sticky } from "../lib/queries/stickies_repo";
-import { fetchTeams, Team } from "../lib/queries/teams_repo";
+import { createTeam, fetchTeams, Team } from "../lib/queries/teams_repo";
 
 function Home() {
 
@@ -24,8 +24,9 @@ function Home() {
     fromHome: false
   };
 
-  const handleSelectTeam = (e: any) => {
+  const handleSelectTeam = async (e: any) => {
     setSelectedTeam(e.target.value);
+
   }
 
   //TODO: this is noob way of handling as form wont change, but not strong in react 
@@ -105,8 +106,9 @@ function Home() {
                   <button
                     className="btn btn-primary btn-rounded m-2"
                     type="submit"
-                    onClick={(e: any) => {
+                    onClick={async (e: any) => {
                       e.preventDefault();
+                      await createTeam(teamName);
                       setCreateTeamModal(false);
                     }}
                   >

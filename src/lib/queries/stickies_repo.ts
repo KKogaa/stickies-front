@@ -27,7 +27,7 @@ export const fetchStickies = async (): Promise<Sticky[]> => {
         id: record.id.toString(),
         title: record.title as string,
         content: record.content as string,
-        owner: record.owner as Owner
+        owner: record.owner as Owner,
       };
       console.log(sticky);
       return sticky;
@@ -37,6 +37,10 @@ export const fetchStickies = async (): Promise<Sticky[]> => {
   } finally {
     await db.close();
   }
+  return [];
+};
+
+export const fetchStickiesByTeam = async (team: Team): Promise<Sticky[]> => {
   return [];
 };
 
@@ -64,7 +68,7 @@ export const addSticky = async (
         content,
       },
     );
- 
+
     //add relation from sticky to team
     //await db.relate("team", team.id, );
 
