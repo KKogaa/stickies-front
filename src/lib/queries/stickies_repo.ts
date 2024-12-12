@@ -1,5 +1,5 @@
 import Surreal from "surrealdb";
-import { getDb } from "../surreal";
+import { getDb, getWsDb } from "../surreal";
 import { Team } from "./teams_repo";
 
 export type Owner = {
@@ -12,6 +12,24 @@ export type Sticky = {
   title: string;
   content: string;
   owner?: Owner;
+};
+
+export const fetchLiveStickies = async (): Promise<Sticky[]> => {
+  const db = await getWsDb();
+  if (!db) {
+    console.log("GAAAAAAAAAAAAAAAAAAAA");
+    throw new Error("Failed to connect to SurrealDB");
+  }
+
+  console.log("GAAAAAAAAAAAAAAAAAAAA");
+
+  console.log("fetchLiveStickies: fetching live stickies from SurrealDB...");
+  const queryUuid = await db.live("sticky", () => {
+    console.log("fetchLiveStickies: live query callback");
+  });
+  console.log(queryUuid);
+
+  return [];
 };
 
 export const fetchStickies = async (): Promise<Sticky[]> => {
