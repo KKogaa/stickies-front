@@ -5,6 +5,7 @@ import {
   addSticky,
   fetchStickies,
   fetchStickiesByTeam,
+  searchStickies,
   Sticky,
 } from "../lib/queries/stickies_repo";
 import { createTeam, fetchTeams, Team } from "../lib/queries/teams_repo";
@@ -20,6 +21,7 @@ function Home() {
     content: "",
   });
   const [selectedCreateStickyTeam, setSelectedCreateStickyTeam] = useState({} as Team);
+  const [search, setSearch] = useState("");
 
   const navbarProps: NavbarProps = {
     fromLogin: true,
@@ -92,6 +94,13 @@ function Home() {
             placeholder="Buscar algo..."
             className="w-full outline-none bg-transparent 
             text-white text-sm"
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={async (e: any) => {
+              if (e.key === "Enter") {
+                const data = await searchStickies(search);
+                setStickies(data);
+              }
+            }}
           />
         </div>
         <button
@@ -165,7 +174,6 @@ function Home() {
                   <select
                     className="select select-bordered w-full max-w-xs m-2"
                     onChange={async (e: any) => {
-                      console.log(teams[e.target.selectedIndex]);
                       setSelectedCreateStickyTeam(teams[e.target.selectedIndex] as Team);
                     }}
                   >

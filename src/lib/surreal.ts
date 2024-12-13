@@ -19,7 +19,7 @@ const DEFAULT_CONFIG: DbConfig = {
 export async function getWsDb(
   config: DbConfig = DEFAULT_CONFIG,
 ): Promise<Surreal> {
-  const db = new Surreal();
+  const db: Surreal = new Surreal();
   try {
     await db.connect(config.wsUrl, {
       auth: localStorage.getItem("jwtToken") || "",
@@ -40,7 +40,7 @@ export async function getWsDb(
 export async function getDb(
   config: DbConfig = DEFAULT_CONFIG,
 ): Promise<Surreal> {
-  const db = new Surreal();
+  const db: Surreal = new Surreal();
 
   try {
     //await db.connect(config.url);
@@ -52,7 +52,6 @@ export async function getDb(
     //await db.authenticate(localStorage.getItem("jwtToken") || "");
 
     //await db.use({ namespace: config.namespace, database: config.database });
-    return db;
   } catch (err) {
     console.error(
       "Failed to connect to SurrealDB:",
@@ -61,4 +60,8 @@ export async function getDb(
     await db.close();
     throw err;
   }
+  if (!db) {
+    throw new Error("Failed to connect to SurrealDB");
+  }
+  return db;
 }

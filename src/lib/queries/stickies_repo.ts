@@ -14,60 +14,8 @@ export type Sticky = {
   owner?: Owner;
 };
 
-//TODO: live queries don't work probably because of rpc connection
-//export const fetchLiveStickies = async (): Promise<Sticky[]> => {
-//  const db = await getWsDb();
-//  if (!db) {
-//    throw new Error("Failed to connect to SurrealDB");
-//  }
-//
-//  console.log("fetchLiveStickies: fetching live stickies from SurrealDB...");
-//  const queryUuid = await db.live("sticky", () => {
-//    console.log("fetchLiveStickies: live query callback");
-//  });
-//  console.log(queryUuid);
-//
-//  return [];
-//};
-//
-
-//export const fetchStickies = async (): Promise<Sticky[]> => {
-//  const db = await getDb();
-//  if (!db) {
-//    throw new Error("Failed to connect to SurrealDB");
-//  }
-//
-//  try {
-//    const records = await db.select("sticky");
-//    return records.map((record) => {
-//      const sticky: Sticky = {
-//        id: record.id as RecordId,
-//        title: record.title as string,
-//        content: record.content as string,
-//        owner: record.owner as RecordId,
-//      };
-//      return sticky;
-//    });
-//  } catch (err) {
-//    console.error(err);
-//  } finally {
-//    await db.close();
-//  }
-//  return [];
-//};
-//
-
 export const fetchStickies = async (): Promise<Sticky[]> => {
-  const db = await getDb()
-    .catch((err) => {
-      console.error(err);
-    })
-    .then((db: Surreal | void) => {
-      if (!db) {
-        throw new Error("Failed to connect to SurrealDB");
-      }
-      return db;
-    });
+  const db: Surreal = await getDb();
 
   try {
     const records = await db.query<Sticky[][]>(
@@ -83,17 +31,7 @@ export const fetchStickies = async (): Promise<Sticky[]> => {
 };
 
 export const fetchStickiesByTeam = async (team: Team): Promise<Sticky[]> => {
-  const db = await getDb()
-    .catch((err) => {
-      console.error(err);
-    })
-    .then((db: Surreal | void) => {
-      if (!db) {
-        throw new Error("Failed to connect to SurrealDB");
-      }
-      return db;
-    });
-  console.log(team.id)
+  const db: Surreal = await getDb();
 
   try {
     const records = await db.query<Sticky[][]>(
@@ -108,28 +46,66 @@ export const fetchStickiesByTeam = async (team: Team): Promise<Sticky[]> => {
   return [];
 };
 
+export const deleteSticky = async (id: string): Promise<void> => {
+  const db: Surreal = await getDb();
+
+  try {
+    await db.query(`delete sticky where id = $id`, { id });
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await db.close();
+  }
+};
+
+export const generateEmbedding = async (data: string): Promise<number[]> => {
+  const response = await fetch("http://localhost:5000/embedding", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ data: data }),
+  }).then(async (res) => await res.json());
+
+  return response;
+};
+
+export const searchStickies = async (query: string): Promise<Sticky[]> => {
+  const db: Surreal = await getDb();
+
+  try {
+    const embedding = await generateEmbedding(query);
+
+    const records = await db.query<Sticky[][]>(
+      `SELECT *, vector::similarity::cosine(embedding, $embedding) AS dist FROM sticky WHERE embedding <|2|> $embedding`,
+      { embedding: embedding },
+    );
+
+    return records[0];
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await db.close();
+  }
+  return [];
+};
+
 export const addSticky = async (
   title: string,
   content: string,
   team: Team,
 ): Promise<Sticky> => {
-  const db = await getDb()
-    .catch((err) => {
-      console.error(err);
-    })
-    .then((db: Surreal | void) => {
-      if (!db) {
-        throw new Error("Failed to connect to SurrealDB");
-      }
-      return db;
-    });
+  const db: Surreal = await getDb();
 
   try {
+    const embedding = await generateEmbedding(`${title} ${content}`);
+
     let [values] = await db.query<Sticky[][]>(
-      "create sticky set title = $title, content = $content",
+      "create sticky set title = $title, content = $content, embedding = $embedding",
       {
         title,
         content,
+        embedding,
       },
     );
 
@@ -141,7 +117,6 @@ export const addSticky = async (
     const stickyId = `${createdSticky.id.tb}:${createdSticky.id.id}`;
 
     //TODO: skill issue team id is not being passed as a record id
-    //TODO: also change the name of this relation to stickyTeam
     await db.query(`relate ${team.id} -> sticky_team -> ${stickyId}`);
 
     return createdSticky;
