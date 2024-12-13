@@ -1,8 +1,8 @@
-import Surreal from "surrealdb";
+import Surreal, { RecordId } from "surrealdb";
 import { getDb } from "../surreal";
 
 export type Team = {
-  id?: string;
+  id: RecordId;
   name: string;
   //members: string[];
 };
@@ -40,15 +40,12 @@ export const fetchTeams = async (): Promise<Team[]> => {
   try {
     const records = await db.select("team");
     const teams = records.map((record: any) => {
-      console.log(record);
       const team: Team = {
         id: record.id.toString(),
         name: record.name as string,
-        //members: record.members as string[],
       };
       return team;
     });
-    console.log(teams);
     return teams;
   } catch (err) {
   } finally {

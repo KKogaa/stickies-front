@@ -1,8 +1,8 @@
 
 interface CardProps {
   index: number;
-  title: string;
-  body: string;
+  title?: string;
+  body?: string;
 }
 
 

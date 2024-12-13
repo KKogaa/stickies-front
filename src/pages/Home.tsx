@@ -3,7 +3,6 @@ import Navbar, { NavbarProps } from "../components/Navbar";
 import Card from "../components/Card";
 import {
   addSticky,
-  fetchLiveStickies,
   fetchStickies,
   Sticky,
 } from "../lib/queries/stickies_repo";
@@ -20,15 +19,12 @@ function Home() {
     content: "",
   });
   const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedCreateStickyTeam, setSelectedCreateStickyTeam] = useState({} as Team);
 
   const navbarProps: NavbarProps = {
     fromLogin: true,
     fromRegister: true,
     fromHome: false,
-  };
-
-  const handleSelectTeam = async (e: any) => {
-    setSelectedTeam(e.target.value);
   };
 
   //TODO: this is noob way of handling as form wont change, but not strong in react
@@ -52,13 +48,9 @@ function Home() {
       setStickies(data);
     };
 
-    const test = async () => {
-      await fetchLiveStickies();
-    };
-
-    test();
     fetchTeamsData();
     fetchStickiesData();
+    setSelectedCreateStickyTeam(teams[0]);
   }, []);
 
   return (
@@ -70,7 +62,10 @@ function Home() {
             Todos
           </option>
           {teams.map((team, index) => (
-            <option key={index} onSelect={handleSelectTeam}>
+            <option key={index} onSelect={async (e: any) => {
+              setSelectedTeam(e.target.value);
+              await fetchStickies().then((data) => setStickies(data));
+            }}>
               {team.name}
             </option>
           ))}
@@ -127,6 +122,7 @@ function Home() {
                     onClick={async (e: any) => {
                       e.preventDefault();
                       await createTeam(teamName);
+                      await fetchTeams().then((data) => setTeams(data));
                       setCreateTeamModal(false);
                     }}
                   >
@@ -160,6 +156,19 @@ function Home() {
               </div>
               <div>
                 <form>
+                  <select
+                    className="select select-bordered w-full max-w-xs m-2"
+                    onChange={async (e: any) => {
+                      console.log(teams[e.target.selectedIndex]);
+                      setSelectedCreateStickyTeam(teams[e.target.selectedIndex] as Team);
+                    }}
+                  >
+                    {teams.map((team: Team, index: number) => (
+                      <option key={index}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     name="title"
                     type="text"
@@ -179,7 +188,8 @@ function Home() {
                     type="submit"
                     onClick={async (e: any) => {
                       e.preventDefault();
-                      await addSticky(formData.title, formData.content);
+                      console.log("selected team: " + JSON.stringify(selectedCreateStickyTeam));
+                      await addSticky(formData.title, formData.content, selectedCreateStickyTeam);
                       const data = await fetchStickies();
                       setStickies(data);
                       setShowCreateModal(false);

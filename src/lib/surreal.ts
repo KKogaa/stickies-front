@@ -54,7 +54,6 @@ export async function getDb(
     //await db.use({ namespace: config.namespace, database: config.database });
     return db;
   } catch (err) {
-    console.log("GAAAAAAAAAa");
     console.error(
       "Failed to connect to SurrealDB:",
       err instanceof Error ? err.message : String(err),
