@@ -77,7 +77,7 @@ export const searchStickies = async (query: string): Promise<Sticky[]> => {
     const embedding = await generateEmbedding(query);
 
     const records = await db.query<Sticky[][]>(
-      `SELECT *, vector::similarity::cosine(embedding, $embedding) AS dist FROM sticky WHERE embedding <|2|> $embedding`,
+      `SELECT *, owner.id, owner.email, vector::similarity::cosine(embedding, $embedding) AS dist FROM sticky WHERE embedding <|2|> $embedding`,
       { embedding: embedding },
     );
 
