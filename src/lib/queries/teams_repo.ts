@@ -17,6 +17,10 @@ export const createTeam = async (name: string): Promise<void> => {
     const record = await db.query("create team set name = $name", {
       name,
     });
+
+    //make the user the owner of the team
+
+    //create a relation between the team and the user
     console.log(record);
   } catch (err) {
     console.error(err);

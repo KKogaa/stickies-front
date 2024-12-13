@@ -4,6 +4,7 @@ import Card from "../components/Card";
 import {
   addSticky,
   fetchStickies,
+  fetchStickiesByTeam,
   Sticky,
 } from "../lib/queries/stickies_repo";
 import { createTeam, fetchTeams, Team } from "../lib/queries/teams_repo";
@@ -18,7 +19,6 @@ function Home() {
     title: "",
     content: "",
   });
-  const [selectedTeam, setSelectedTeam] = useState("");
   const [selectedCreateStickyTeam, setSelectedCreateStickyTeam] = useState({} as Team);
 
   const navbarProps: NavbarProps = {
@@ -57,15 +57,21 @@ function Home() {
     <div>
       <Navbar {...navbarProps} />
       <div className="flex start m-4">
-        <select className="select select-bordered w-full max-w-xs">
-          <option disabled selected>
-            Todos
-          </option>
+        <select
+          className="select select-bordered w-full max-w-xs"
+          onChange={async (e: any) => {
+            if (e.target.value === "Todos") {
+              setStickies(await fetchStickies());
+              return;
+            }
+            const stickiesByTeam = await fetchStickiesByTeam(teams[e.target.selectedIndex - 1]);
+            setStickies(stickiesByTeam);
+          }}
+          defaultValue={"Todos"}
+        >
+          <option>Todos</option>
           {teams.map((team, index) => (
-            <option key={index} onSelect={async (e: any) => {
-              setSelectedTeam(e.target.value);
-              await fetchStickies().then((data) => setStickies(data));
-            }}>
+            <option key={index}>
               {team.name}
             </option>
           ))}
@@ -188,7 +194,6 @@ function Home() {
                     type="submit"
                     onClick={async (e: any) => {
                       e.preventDefault();
-                      console.log("selected team: " + JSON.stringify(selectedCreateStickyTeam));
                       await addSticky(formData.title, formData.content, selectedCreateStickyTeam);
                       const data = await fetchStickies();
                       setStickies(data);
@@ -209,12 +214,13 @@ function Home() {
         {stickies.length === 0 ? (
           <></>
         ) : (
-          stickies.map((sticky, index) => (
+          stickies.map((sticky: Sticky, index) => (
             <Card
               key={index}
               index={index}
               title={sticky.title}
               body={sticky.content}
+              email={sticky.owner.email}
             />
           ))
         )}
